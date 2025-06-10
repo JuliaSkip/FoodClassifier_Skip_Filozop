@@ -21,7 +21,7 @@ class ImageClassifier: ObservableObject {
         guard let ciImage = CIImage(image: image) else { return }
         let request = VNCoreMLRequest(model: model) { request, error in
             guard let result = request.results?.sorted(by: {$0.confidence > $1.confidence}) as? [VNClassificationObservation] else{
-                print("Error recognizing text: \(error!.localizedDescription)")
+                print("Error recognizing image: \(error!.localizedDescription)")
                 return
             }
             guard let res = result.first?.identifier else{
