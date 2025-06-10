@@ -1,24 +1,35 @@
-//
-//  ContentView.swift
-//  FoodClassifier_Skip_Filozop
-//
-//  Created by Скіп Юлія Ярославівна on 10.06.2025.
-//
-
 import SwiftUI
+import CoreML
 
 struct ContentView: View {
+    @StateObject private var classifier = ImageClassifier()
+    @State private var selectedImage: UIImage? = nil
+    @State private var isImagePickerPresented = false
+    
     var body: some View {
         VStack {
-            Image(systemName: "globe")
-                .imageScale(.large)
-                .foregroundStyle(.tint)
-            Text("Hello, world!")
+            if let image = selectedImage {
+                Image(uiImage: image)
+                    .resizable()
+                    .scaledToFit()
+                    .frame(height: 300)
+            }
+            
+            Button("Select Image") {
+                isImagePickerPresented = true
+                classifier.cleanResult()
+            }
+            .padding()
+            
+            Text("Classification: \(classifier.classificationResult)")
+                .font(.headline)
+                .foregroundStyle(Color.black)
+                .padding()
         }
-        .padding()
+        .sheet(isPresented: $isImagePickerPresented) {
+            ImagePicker(image: $selectedImage) { image in
+                classifier.classifyImage(image)
+            }
+        }
     }
-}
-
-#Preview {
-    ContentView()
 }

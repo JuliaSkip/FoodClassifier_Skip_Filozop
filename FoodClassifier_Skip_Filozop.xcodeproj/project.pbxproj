@@ -6,7 +6,12 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		A31C93CC2DF85A3D00D7D945 /* FoodClassifier.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = A31C93CB2DF85A3D00D7D945 /* FoodClassifier.mlmodel */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
+		A31C93CB2DF85A3D00D7D945 /* FoodClassifier.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = FoodClassifier.mlmodel; sourceTree = "<group>"; };
 		A34EA9F52DF84F500002B2A0 /* FoodClassifier_Skip_Filozop.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FoodClassifier_Skip_Filozop.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -32,6 +37,7 @@
 		A34EA9EC2DF84F500002B2A0 = {
 			isa = PBXGroup;
 			children = (
+				A31C93CB2DF85A3D00D7D945 /* FoodClassifier.mlmodel */,
 				A34EA9F72DF84F500002B2A0 /* FoodClassifier_Skip_Filozop */,
 				A34EA9F62DF84F500002B2A0 /* Products */,
 			);
@@ -119,6 +125,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				A31C93CC2DF85A3D00D7D945 /* FoodClassifier.mlmodel in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
