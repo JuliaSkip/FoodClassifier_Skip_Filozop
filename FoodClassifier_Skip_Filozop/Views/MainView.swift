@@ -12,39 +12,63 @@ struct MainView: View {
     @State private var showCameraView = false
     @State private var newIngredientName: String = ""
     private let recipeAPI = RecipeAPIService()
+    @State private var selectedTab: String = "history"
     
     var body: some View {
-        NavigationView {
+        NavigationStack {
             VStack {
-                makeTopLine()
-                makeIngredientsList()
-                makeRecipesList()
+                
+                if selectedTab == "home" {
+                    makeHomePage()
+                        .onAppear {
+                            fetchRecipes()
+                        }
+                } else {
+                    Text("Recenly Viewed")
+                        .font(.title3)
+                    makeRecipesList()
+                        .onAppear{
+                            self.fetchedRecipes = RecipeAPIService().loadRecipesFromFile()
+                        }
+                }
                 
                 Spacer()
                 
                 HStack {
+                    
                     Spacer()
-                    Image(systemName: "house.fill")
-                        .padding()
-                        .imageScale(.large)
+                    Button(action: {
+                        selectedTab = "home"
+                    }) {
+                        Image(systemName: "house.fill")
+                            .padding()
+                            .imageScale(.large)
+                            .foregroundColor(selectedTab == "home" ? .white : .gray)
+                    }
                     Spacer()
-                    Image(systemName: "arrow.counterclockwise")
-                        .padding()
-                        .imageScale(.large)
-                        .onTapGesture {
-                            let recipes = RecipeAPIService().loadRecipesFromFile()
-                        }
+                    Button(action: {
+                        selectedTab = "history"
+                    }) {
+                        Image(systemName: "arrow.counterclockwise")
+                            .padding()
+                            .imageScale(.large)
+                            .foregroundColor(selectedTab == "history" ? .white : .gray)
+                    }
                     Spacer()
                 }
                 .background(Color(red: 138/255, green: 214/255, blue: 151/255))
-                .foregroundColor(.white)
+                
             }
             .background(Color(.systemGroupedBackground))
             .navigationBarTitle("FoodSearch")
-            .onAppear {
-                self.fetchedRecipes = RecipeAPIService().loadRecipesFromFile()
-            }
         }
+    }
+    
+    @ViewBuilder
+    func makeHomePage() -> some View {
+        makeTopLine()
+        makeIngredientsList()
+        makeRecipesList()
     }
     
     
@@ -207,8 +231,4 @@ struct MainView: View {
             }
         }
     }
-}
-
-#Preview {
-    MainView()
 }
