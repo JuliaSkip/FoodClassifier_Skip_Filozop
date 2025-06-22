@@ -12,7 +12,7 @@ struct MainView: View {
     @State private var showCameraView = false
     @State private var newIngredientName: String = ""
     private let recipeAPI = RecipeAPIService()
-    @State private var selectedTab: String = "history"
+    @State private var selectedTab: String = "home"
     
     var body: some View {
         NavigationStack {
@@ -20,16 +20,10 @@ struct MainView: View {
                 
                 if selectedTab == "home" {
                     makeHomePage()
-                        .onAppear {
-                            fetchRecipes()
-                        }
                 } else {
                     Text("Recenly Viewed")
                         .font(.title3)
-                    makeRecipesList()
-                        .onAppear{
-                            self.fetchedRecipes = RecipeAPIService().loadRecipesFromFile()
-                        }
+                    makeRecipesList(for: RecipeAPIService().loadRecipesFromFile())
                 }
                 
                 Spacer()
@@ -61,6 +55,9 @@ struct MainView: View {
             }
             .background(Color(.systemGroupedBackground))
             .navigationBarTitle("FoodSearch")
+            .onAppear {
+                fetchRecipes()
+            }
         }
     }
     
@@ -68,7 +65,7 @@ struct MainView: View {
     func makeHomePage() -> some View {
         makeTopLine()
         makeIngredientsList()
-        makeRecipesList()
+        makeRecipesList(for: fetchedRecipes)
     }
     
     
@@ -149,9 +146,9 @@ struct MainView: View {
     
     
     @ViewBuilder
-    func makeRecipesList() -> some View {
+    func makeRecipesList(for recipes: [SpoonacularRecipe]) -> some View {
         ScrollView {
-            ForEach(fetchedRecipes) { recipe in
+            ForEach(recipes) { recipe in
                 NavigationLink(destination: RecipeDetailView(recipe: recipe)) {
                     HStack {
                         AsyncImage(url: URL(string: recipe.image)) { phase in

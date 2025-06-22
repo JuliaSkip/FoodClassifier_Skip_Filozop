@@ -38,8 +38,14 @@ class RecipeAPIService {
     }
     
     func writeRecipesToFile(recipes: [SpoonacularRecipe]){
+        var recipesFromFile = loadRecipesFromFile()
+        for recipe in recipes{
+            if !recipesFromFile.contains(where: {$0.id == recipe.id}){
+                recipesFromFile.append(contentsOf: recipes)
+            }
+        }
         do {
-            let data = try JSONEncoder().encode(recipes)
+            let data = try JSONEncoder().encode(recipesFromFile)
             let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
             let fileURL = documentsDirectory.appendingPathComponent(fileName)
             try data.write(to: fileURL)
@@ -55,8 +61,7 @@ class RecipeAPIService {
         
         do {
             let results = try JSONDecoder().decode([SpoonacularRecipe].self, from: data)
-            print(results)
-            return results
+            return results.reversed()
         } catch {
             print("Error decoding JSON: \(error)")
             return []
