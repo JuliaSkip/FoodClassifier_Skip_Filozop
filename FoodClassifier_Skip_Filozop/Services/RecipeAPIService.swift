@@ -7,7 +7,7 @@ class RecipeAPIService {
 
     func fetchRecipes(for ingredients: [String], completion: @escaping ([SpoonacularRecipe]) -> Void) {
         let ingredientsParam = ingredients.joined(separator: ",")
-        let urlString = "https://api.spoonacular.com/recipes/findByIngredients?ingredients=\(ingredientsParam)&number=30&apiKey=\(apiKey)"
+        let urlString = "https://api.spoonacular.com/recipes/findByIngredients?ingredients=\(ingredientsParam)&number=100&apiKey=\(apiKey)"
 
         guard let url = URL(string: urlString.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)!) else {
             print("Invalid URL")
@@ -54,6 +54,23 @@ class RecipeAPIService {
         }
     }
     
+    func removeRecipesFromFile(recipes: [SpoonacularRecipe]){
+        var recipesFromFile = loadRecipesFromFile()
+        for recipe in recipes {
+            if let index = recipesFromFile.firstIndex(where: { $0.id == recipe.id }) {
+                recipesFromFile.remove(at: index)
+            }
+        }
+        
+        do {
+            let data = try JSONEncoder().encode(recipesFromFile)
+            let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
+            let fileURL = documentsDirectory.appendingPathComponent(fileName)
+            try data.write(to: fileURL)
+        }catch {
+            print("Error saving JSON: \(error)")
+        }
+    }
     
     func loadRecipesFromFile() -> [SpoonacularRecipe] {
         guard let filePath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?.appendingPathComponent(fileName),

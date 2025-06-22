@@ -9,6 +9,7 @@ struct MainView: View {
     ]
     
     @State private var fetchedRecipes: [SpoonacularRecipe] = []
+    @State private var savedRecipes: [SpoonacularRecipe] = []
     @State private var showCameraView = false
     @State private var newIngredientName: String = ""
     private let recipeAPI = RecipeAPIService()
@@ -23,7 +24,7 @@ struct MainView: View {
                 } else {
                     Text("Recenly Viewed")
                         .font(.title3)
-                    makeRecipesList(for: RecipeAPIService().loadRecipesFromFile())
+                    makeRecipesList(for: savedRecipes)
                 }
                 
                 Spacer()
@@ -57,6 +58,7 @@ struct MainView: View {
             .navigationBarTitle("FoodSearch")
             .onAppear {
                 fetchRecipes()
+                self.savedRecipes = RecipeAPIService().loadRecipesFromFile()
             }
         }
     }
@@ -150,48 +152,68 @@ struct MainView: View {
         ScrollView {
             ForEach(recipes) { recipe in
                 NavigationLink(destination: RecipeDetailView(recipe: recipe)) {
-                    HStack {
-                        AsyncImage(url: URL(string: recipe.image)) { phase in
-                            if let image = phase.image {
-                                image
-                                    .resizable()
-                                    .scaledToFill()
-                                    .frame(width: 120, height: 120)
-                                    .clipped()
-                                    .cornerRadius(12)
-                                    .padding(.trailing, -10)
-                                    .padding(10)
-                            } else if phase.error != nil {
-                                Text("Failed to load image")
-                                    .padding(.horizontal)
-                            } else {
-                                ProgressView()
-                                    .padding()
-                            }
-                        }
+                    VStack {
                         
-                        VStack(alignment: .leading) {
-                            Text(recipe.title)
-                                .font(.headline)
-                                .fontWeight(.semibold)
-                                .foregroundColor(.black)
-                            
-                            if !recipe.usedIngredients.isEmpty {
-                                Text(recipe.usedIngredients.map { $0.name }.joined(separator: ", "))
-                                    .font(.subheadline)
-                                    .foregroundColor(.green)
-                            }
-                            
-                            if !recipe.missedIngredients.isEmpty {
-                                Text(recipe.missedIngredients.map { $0.name }.joined(separator: ", "))
-                                    .font(.subheadline)
-                                    .foregroundColor(.black)
+                        HStack{
+                            Spacer()
+                            if(selectedTab == "history"){
+                                Button(action: {
+                                    RecipeAPIService().removeRecipesFromFile(recipes: [recipe])
+                                    self.savedRecipes = RecipeAPIService().loadRecipesFromFile()
+                                }) {
+                                    Image(systemName: "xmark.circle.fill")
+                                        .foregroundColor(.red)
+                                        .padding(.horizontal)
+                                        .padding(.top)
+                                }
                             }
                             
                         }
-                        .background(.white)
-                        .frame(maxWidth: 200)
-                        .padding(10)
+                        HStack{
+                            AsyncImage(url: URL(string: recipe.image)) { phase in
+                                if let image = phase.image {
+                                    image
+                                        .resizable()
+                                        .scaledToFill()
+                                        .frame(width: 120, height: 120)
+                                        .clipped()
+                                        .cornerRadius(12)
+                                        .padding(.trailing, -10)
+                                        .padding(10)
+                                } else if phase.error != nil {
+                                    Text("Failed to load image")
+                                        .padding(.horizontal)
+                                } else {
+                                    ProgressView()
+                                        .padding()
+                                }
+                            }
+                            
+                            VStack(alignment: .leading) {
+                                
+                                Text(recipe.title)
+                                    .font(.headline)
+                                    .fontWeight(.semibold)
+                                    .foregroundColor(.black)
+                                
+                                if !recipe.usedIngredients.isEmpty {
+                                    Text(recipe.usedIngredients.map { $0.name }.joined(separator: ", "))
+                                        .font(.subheadline)
+                                        .foregroundColor(.green)
+                                }
+                                
+                                if !recipe.missedIngredients.isEmpty {
+                                    Text(recipe.missedIngredients.map { $0.name }.joined(separator: ", "))
+                                        .font(.subheadline)
+                                        .foregroundColor(.black)
+                                }
+                                
+                            }
+                            .background(.white)
+                            .frame(maxWidth: 200)
+                            .padding(10)
+                            
+                        }
                     }
                     .background(Color.white)
                     .cornerRadius(15)
@@ -229,3 +251,4 @@ struct MainView: View {
         }
     }
 }
+

@@ -30,17 +30,15 @@ struct RecipeDetailView: View {
 
                 VStack(alignment: .leading, spacing: 8) {
                     if !recipe.usedIngredients.isEmpty {
-                        ForEach(recipe.usedIngredients, id: \.name) { ingredient in
-                            Text(ingredient.name)
-                                .font(.body)
-                        }
+                        Text(recipe.usedIngredients.map { $0.name }.joined(separator: ", "))
+                            .font(.subheadline)
+                            .foregroundColor(.green)
                     }
-
+                    
                     if !recipe.missedIngredients.isEmpty {
-                        ForEach(recipe.missedIngredients, id: \.name) { ingredient in
-                            Text(ingredient.name)
-                                .font(.body)
-                        }
+                        Text(recipe.missedIngredients.map { $0.name }.joined(separator: ", "))
+                            .font(.subheadline)
+                            .foregroundColor(.black)
                     }
                 }
                 .padding()
@@ -48,6 +46,7 @@ struct RecipeDetailView: View {
                 .cornerRadius(12)
 
                 Spacer()
+                
             }
             .padding(.horizontal)
         }
@@ -58,7 +57,3 @@ struct RecipeDetailView: View {
         .navigationBarTitleDisplayMode(.inline)
     }
 }
-
-//#Preview {
-//    RecipeDetailView()
-//}
