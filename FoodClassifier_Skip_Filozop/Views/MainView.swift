@@ -1,9 +1,3 @@
-//
-//  MainView.swift
-//  FoodClassifier_Skip_Filozop
-//
-//  Created by Dasha Filozop on 18.06.2025.
-//
 
 import SwiftUI
 
@@ -13,38 +7,58 @@ struct MainView: View {
         Ingredient(name: "Cucumber", quantity: "500g"),
         Ingredient(name: "Onion", quantity: "200g")
     ]
-
+    
     @State private var fetchedRecipes: [SpoonacularRecipe] = []
     @State private var showCameraView = false
     @State private var newIngredientName: String = ""
     private let recipeAPI = RecipeAPIService()
-
+    
     var body: some View {
         NavigationView {
             VStack {
                 HStack {
                     TextField("Enter new ingredient", text: $newIngredientName, onCommit: {
-                        addNewIngredient()
+                        addNewIngredient(ingredientName: newIngredientName)
                     })
                     .textFieldStyle(RoundedBorderTextFieldStyle())
-                    .padding(.horizontal)
-
+                    .padding(.leading, 10)
+                    
+                    
                     Button(action: {
-                        addNewIngredient()
+                        addNewIngredient(ingredientName: newIngredientName)
                     }) {
                         Text("Add")
                             .padding(.horizontal)
-                            .padding(.vertical, 8)
-                            .background(Color.green.opacity(0.7))
+                            .padding(.vertical, 4)
+                            .background(Color(red: 138/255, green: 214/255, blue: 151/255))
                             .foregroundColor(.white)
                             .cornerRadius(8)
                     }
                     .disabled(newIngredientName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
-                    .padding(.trailing)
+                    
+                    Button(action: {
+                        showCameraView = true
+                    }) {
+                        Image(systemName: "camera")
+                            .imageScale(.large)
+                            .font(.title2)
+                            .padding(.horizontal, 5)
+                            .padding(.bottom, 2)
+                            .foregroundStyle(Color(red: 138/255, green: 214/255, blue: 151/255))
+                    }
+                    .sheet(isPresented: $showCameraView) {
+                        CameraView { name, quantity in
+                            if name != "" {
+                                addNewIngredient(ingredientName: "\(name), \(quantity)")
+                                fetchRecipes()
+                            }
+                            showCameraView = false
+                        }
+                    }
                 }
                 .padding(.vertical, 8)
-
-
+                
+                
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack {
                         ForEach(selectedIngredients) { ingredient in
@@ -52,7 +66,7 @@ struct MainView: View {
                                 Text(ingredient.quantity.isEmpty ? ingredient.name : "\(ingredient.name), \(ingredient.quantity)")
                                     .padding(8)
                                     .clipShape(Capsule())
-
+                                
                                 Button(action: {
                                     if let index = selectedIngredients.firstIndex(where: { $0.id == ingredient.id }) {
                                         selectedIngredients.remove(at: index)
@@ -70,25 +84,21 @@ struct MainView: View {
                     }
                     .padding(.horizontal)
                 }
-
+                
                 ScrollView {
                     ForEach(fetchedRecipes) { recipe in
                         NavigationLink(destination: RecipeDetailView(recipe: recipe)) {
-                            VStack(alignment: .leading, spacing: 10) {
-                                Text(recipe.title)
-                                    .font(.title3)
-                                    .fontWeight(.semibold)
-                                    .padding(.horizontal)
-
+                            HStack {
                                 AsyncImage(url: URL(string: recipe.image)) { phase in
                                     if let image = phase.image {
                                         image
                                             .resizable()
                                             .scaledToFill()
-                                            .frame(height: 200)
+                                            .frame(width: 120, height: 120)
                                             .clipped()
                                             .cornerRadius(12)
-                                            .padding(.horizontal)
+                                            .padding(.trailing, -10)
+                                            .padding(10)
                                     } else if phase.error != nil {
                                         Text("Failed to load image")
                                             .padding(.horizontal)
@@ -97,25 +107,29 @@ struct MainView: View {
                                             .padding()
                                     }
                                 }
-
-                                VStack(alignment: .leading, spacing: 4) {
+                                
+                                VStack(alignment: .leading) {
+                                    Text(recipe.title)
+                                        .font(.headline)
+                                        .fontWeight(.semibold)
+                                        .foregroundColor(.black)
+                                    
                                     if !recipe.usedIngredients.isEmpty {
-                                        ForEach(recipe.usedIngredients, id: \.name) { ingredient in
-                                            Text("- \(ingredient.name)")
-                                                .font(.subheadline)
-                                                .foregroundColor(.green)
-                                        }
+                                        Text(recipe.usedIngredients.map { $0.name }.joined(separator: ", "))
+                                            .font(.subheadline)
+                                            .foregroundColor(.green)
                                     }
-
+                                    
                                     if !recipe.missedIngredients.isEmpty {
-                                        ForEach(recipe.missedIngredients, id: \.name) { ingredient in
-                                            Text("- \(ingredient.name)")
-                                                .font(.subheadline)
-                                        }
+                                        Text(recipe.missedIngredients.map { $0.name }.joined(separator: ", "))
+                                            .font(.subheadline)
+                                            .foregroundColor(.black)
                                     }
+                                    
                                 }
-                                .padding(.horizontal)
-                                .padding(.bottom)
+                                .background(.white)
+                                .frame(maxWidth: 200)
+                                .padding(10)
                             }
                             .background(Color.white)
                             .cornerRadius(15)
@@ -126,44 +140,36 @@ struct MainView: View {
                         .buttonStyle(PlainButtonStyle())
                     }
                 }
-
+                
                 Spacer()
-
+                
                 HStack {
                     Spacer()
                     Image(systemName: "house.fill")
                         .padding()
+                        .imageScale(.large)
                     Spacer()
                     Image(systemName: "arrow.counterclockwise")
                         .padding()
+                        .imageScale(.large)
                         .onTapGesture {
-                            fetchRecipes()
+                            //fetchRecipes()
                         }
                     Spacer()
                 }
-                .background(Color.green)
+                .background(Color(red: 138/255, green: 214/255, blue: 151/255))
                 .foregroundColor(.white)
             }
             .background(Color(.systemGroupedBackground))
             .navigationBarTitle("FoodSearch")
-            .navigationBarItems(trailing: Button(action: {
-                showCameraView = true
-            }) {
-                Image(systemName: "camera")
-                    .imageScale(.large)
-                    .padding()
-            })
-            .sheet(isPresented: $showCameraView) {
-                CameraView()
-            }
             .onAppear {
-                fetchRecipes()
+                //fetchRecipes()
             }
         }
     }
-
-    private func addNewIngredient() {
-        let trimmedInput = newIngredientName.trimmingCharacters(in: .whitespacesAndNewlines)
+    
+    func addNewIngredient(ingredientName: String) {
+        let trimmedInput = ingredientName.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmedInput.isEmpty else { return }
         
         let parts = trimmedInput.split(separator: ",", maxSplits: 1).map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
@@ -177,7 +183,7 @@ struct MainView: View {
         
         fetchRecipes()
     }
-
+    
     private func fetchRecipes() {
         let ingredientNames = selectedIngredients.map { $0.name }
         recipeAPI.fetchRecipes(for: ingredientNames) { recipes in

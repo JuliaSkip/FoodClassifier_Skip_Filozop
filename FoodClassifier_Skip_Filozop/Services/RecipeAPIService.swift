@@ -1,9 +1,3 @@
-//
-//  RecipeAPIService.swift
-//  FoodClassifier_Skip_Filozop
-//
-//  Created by Dasha Filozop on 18.06.2025.
-//
 
 import Foundation
 
@@ -12,7 +6,7 @@ class RecipeAPIService {
 
     func fetchRecipes(for ingredients: [String], completion: @escaping ([SpoonacularRecipe]) -> Void) {
         let ingredientsParam = ingredients.joined(separator: ",")
-        let urlString = "https://api.spoonacular.com/recipes/findByIngredients?ingredients=\(ingredientsParam)&number=5&apiKey=\(apiKey)"
+        let urlString = "https://api.spoonacular.com/recipes/findByIngredients?ingredients=\(ingredientsParam)&number=30&apiKey=\(apiKey)"
 
         guard let url = URL(string: urlString.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)!) else {
             print("Invalid URL")
