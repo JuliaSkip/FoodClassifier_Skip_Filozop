@@ -52,6 +52,7 @@ struct CameraView: View {
         }
     }
     
+    @State var weight: String = ""
     @ViewBuilder
     func makeTextContent() -> some View {
         if classifier.classificationResult.isEmpty && recognizedText.isEmpty {
@@ -64,6 +65,17 @@ struct CameraView: View {
             Text("Product name: \(classifier.classificationResult.replacingOccurrences(of: "\\d", with: "", options: .regularExpression))")
                 .font(.headline)
                 .padding()
+            if recognizedText.isEmpty {
+                TextField(
+                    "Product weight",
+                    text: $weight,
+                    onCommit: { recognizedText = weight
+                    }
+                )
+                .textFieldStyle(RoundedBorderTextFieldStyle())
+                .padding(.leading, 10)
+                .foregroundStyle(.gray)
+            }
         }
         
         if !recognizedText.isEmpty {
@@ -96,6 +108,15 @@ struct CameraView: View {
         
         if !classifier.classificationResult.isEmpty {
             HStack{
+                
+                Button("Cancel") {
+                    onAddIngredient("", "")
+                }
+                .padding(10)
+                .background(.white)
+                .foregroundColor(Color(red: 138/255, green: 214/255, blue: 151/255))
+                .cornerRadius(8)
+                
                 Button("Add product") {
                     let name = classifier.classificationResult.replacingOccurrences(of: "\\d", with: "", options: .regularExpression)
                     onAddIngredient(name, recognizedText)
@@ -105,13 +126,6 @@ struct CameraView: View {
                 .foregroundColor(Color(red: 138/255, green: 214/255, blue: 151/255))
                 .cornerRadius(8)
                 
-                Button("Cancel") {
-                    onAddIngredient("", "")
-                }
-                .padding(10)
-                .background(.white)
-                .foregroundColor(Color(red: 138/255, green: 214/255, blue: 151/255))
-                .cornerRadius(8)
             }
         }
     }

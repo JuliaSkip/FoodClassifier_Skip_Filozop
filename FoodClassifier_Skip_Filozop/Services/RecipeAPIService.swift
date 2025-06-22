@@ -2,12 +2,13 @@
 import Foundation
 
 class RecipeAPIService {
-    private let apiKey = "57d67011b66e4828a471dae3c78d38bf"
+    private let apiKeyD = "57d67011b66e4828a471dae3c78d38bf"
+    private let apiKeyJ = "e1125124ce06424d92bd601b5864ddc5"
     private let fileName = "recipes.json"
 
     func fetchRecipes(for ingredients: [String], completion: @escaping ([SpoonacularRecipe]) -> Void) {
         let ingredientsParam = ingredients.joined(separator: ",")
-        let urlString = "https://api.spoonacular.com/recipes/findByIngredients?ingredients=\(ingredientsParam)&number=100&apiKey=\(apiKey)"
+        let urlString = "https://api.spoonacular.com/recipes/findByIngredients?ingredients=\(ingredientsParam)&number=100&apiKey=\(apiKeyJ)"
 
         guard let url = URL(string: urlString.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)!) else {
             print("Invalid URL")
