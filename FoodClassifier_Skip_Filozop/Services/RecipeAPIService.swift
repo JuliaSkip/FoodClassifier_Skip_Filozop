@@ -2,7 +2,8 @@
 import Foundation
 
 class RecipeAPIService {
-    private let apiKey = "57d67011b66e4828a471dae3c78d38bf" 
+    private let apiKey = "57d67011b66e4828a471dae3c78d38bf"
+    private let fileName = "recipes.json"
 
     func fetchRecipes(for ingredients: [String], completion: @escaping ([SpoonacularRecipe]) -> Void) {
         let ingredientsParam = ingredients.joined(separator: ",")
@@ -34,5 +35,31 @@ class RecipeAPIService {
                 }
             }
         }.resume()
+    }
+    
+    func writeRecipesToFile(recipes: [SpoonacularRecipe]){
+        do {
+            let data = try JSONEncoder().encode(recipes)
+            let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
+            let fileURL = documentsDirectory.appendingPathComponent(fileName)
+            try data.write(to: fileURL)
+        }catch {
+            print("Error saving JSON: \(error)")
+        }
+    }
+    
+    
+    func loadRecipesFromFile() -> [SpoonacularRecipe] {
+        guard let filePath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?.appendingPathComponent(fileName),
+              let data = try? Data(contentsOf: filePath) else { return [] }
+        
+        do {
+            let results = try JSONDecoder().decode([SpoonacularRecipe].self, from: data)
+            print(results)
+            return results
+        } catch {
+            print("Error decoding JSON: \(error)")
+            return []
+        }
     }
 }

@@ -51,6 +51,9 @@ struct RecipeDetailView: View {
             }
             .padding(.horizontal)
         }
+        .onAppear {
+            RecipeAPIService().writeRecipesToFile(recipes: [recipe])
+        }
         .navigationTitle("Recipe Details")
         .navigationBarTitleDisplayMode(.inline)
     }
