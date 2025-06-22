@@ -1,0 +1,68 @@
+//
+//  RecipeDetailView.swift
+//  FoodClassifier_Skip_Filozop
+//
+//  Created by Dasha Filozop on 18.06.2025.
+//
+
+
+import SwiftUI
+
+struct RecipeDetailView: View {
+    var recipe: SpoonacularRecipe
+
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 16) {
+                Text(recipe.title)
+                    .font(.largeTitle)
+                    .bold()
+                    .padding(.top)
+
+                AsyncImage(url: URL(string: recipe.image)) { phase in
+                    if let image = phase.image {
+                        image
+                            .resizable()
+                            .scaledToFill()
+                            .frame(height: 250)
+                            .clipped()
+                            .cornerRadius(12)
+                    } else if phase.error != nil {
+                        Text("Failed to load image")
+                    } else {
+                        ProgressView()
+                    }
+                }
+                .padding(.bottom)
+
+                VStack(alignment: .leading, spacing: 8) {
+                    if !recipe.usedIngredients.isEmpty {
+                        ForEach(recipe.usedIngredients, id: \.name) { ingredient in
+                            Text(ingredient.name)
+                                .font(.body)
+                        }
+                    }
+
+                    if !recipe.missedIngredients.isEmpty {
+                        ForEach(recipe.missedIngredients, id: \.name) { ingredient in
+                            Text(ingredient.name)
+                                .font(.body)
+                        }
+                    }
+                }
+                .padding()
+                .background(Color(.systemGray6))
+                .cornerRadius(12)
+
+                Spacer()
+            }
+            .padding(.horizontal)
+        }
+        .navigationTitle("Recipe Details")
+        .navigationBarTitleDisplayMode(.inline)
+    }
+}
+
+//#Preview {
+//    RecipeDetailView()
+//}
