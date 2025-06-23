@@ -3,6 +3,7 @@ import SwiftUI
 
 struct RecipeDetailView: View {
     var recipe: SpoonacularRecipe
+    @State var steps: [SpoonacularSteps] = []
 
     var body: some View {
         ScrollView {
@@ -30,13 +31,13 @@ struct RecipeDetailView: View {
 
                 VStack(alignment: .leading, spacing: 8) {
                     if !recipe.usedIngredients.isEmpty {
-                        Text(recipe.usedIngredients.map { $0.name }.joined(separator: ", "))
+                        Text(recipe.usedIngredients.map { $0.original }.joined(separator: "; "))
                             .font(.subheadline)
                             .foregroundColor(.green)
                     }
                     
                     if !recipe.missedIngredients.isEmpty {
-                        Text(recipe.missedIngredients.map { $0.name }.joined(separator: ", "))
+                        Text(recipe.missedIngredients.map { $0.original }.joined(separator: "; "))
                             .font(.subheadline)
                             .foregroundColor(.black)
                     }
@@ -47,11 +48,39 @@ struct RecipeDetailView: View {
 
                 Spacer()
                 
+                if !steps.isEmpty {
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text("Instructions")
+                            .font(.title2)
+                            .bold()
+                            .padding(.bottom, 4)
+                        
+                        ForEach(steps.first?.steps ?? [], id: \.number) { step in
+                            HStack(alignment: .top) {
+                                Text("\(step.number).")
+                                    .bold()
+                                Text(step.step)
+                                    .fixedSize(horizontal: false, vertical: true)
+                            }
+                            .padding(.vertical, 4)
+                        }
+                    }
+                    .padding()
+                    .background(Color(.systemGray6))
+                    .cornerRadius(12)
+                }
+
+                
             }
             .padding(.horizontal)
         }
         .onAppear {
             RecipeAPIService().writeRecipesToFile(recipes: [recipe])
+            RecipeAPIService().fetchRecipeSteps(for: recipe.id) { res in
+                DispatchQueue.main.async {
+                    self.steps = res
+                }
+            }
         }
         .navigationTitle("Recipe Details")
         .navigationBarTitleDisplayMode(.inline)

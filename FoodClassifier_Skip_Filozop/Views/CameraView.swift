@@ -12,9 +12,9 @@ struct CameraView: View {
     @State private var recognizedText: String = ""
     @State private var sourceType: UIImagePickerController.SourceType = .photoLibrary
     var onAddIngredient: (String, String) -> Void
+    @FocusState private var isTextFieldFocused: Bool
     
     var body: some View {
-        NavigationView {
             VStack {
                 Spacer()
                 
@@ -49,7 +49,10 @@ struct CameraView: View {
                     }
                 }
             }
-        }
+            .onTapGesture {
+                self.isTextFieldFocused = false
+            }
+        
     }
     
     @State var weight: String = ""
@@ -75,6 +78,7 @@ struct CameraView: View {
                 .textFieldStyle(RoundedBorderTextFieldStyle())
                 .padding(.leading, 10)
                 .foregroundStyle(.gray)
+                .focused($isTextFieldFocused)
             }
         }
         

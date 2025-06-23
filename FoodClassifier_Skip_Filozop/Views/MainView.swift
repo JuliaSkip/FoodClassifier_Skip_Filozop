@@ -14,6 +14,9 @@ struct MainView: View {
     @State private var newIngredientName: String = ""
     private let recipeAPI = RecipeAPIService()
     @State private var selectedTab: String = "home"
+    @State private var searchText: String = ""
+    @FocusState private var isTextFieldFocused: Bool
+
     
     var body: some View {
         NavigationStack {
@@ -21,10 +24,13 @@ struct MainView: View {
                 
                 if selectedTab == "home" {
                     makeHomePage()
+                        .onAppear{
+                            self.searchText = ""
+                        }
                 } else {
                     Text("Recenly Viewed")
                         .font(.title3)
-                    makeRecipesList(for: savedRecipes)
+                    makeRecipesList(for: savedRecipes.reversed())
                 }
                 
                 Spacer()
@@ -60,6 +66,10 @@ struct MainView: View {
                 fetchRecipes()
                 self.savedRecipes = RecipeAPIService().loadRecipesFromFile()
             }
+            .onTapGesture {
+                isTextFieldFocused = false
+            }
+
         }
     }
     
@@ -79,6 +89,7 @@ struct MainView: View {
             })
             .textFieldStyle(RoundedBorderTextFieldStyle())
             .padding(.leading, 10)
+            .focused($isTextFieldFocused)
             
             
             Button(action: {
@@ -149,79 +160,94 @@ struct MainView: View {
     
     @ViewBuilder
     func makeRecipesList(for recipes: [SpoonacularRecipe]) -> some View {
-        ScrollView {
-            ForEach(recipes) { recipe in
-                NavigationLink(destination: RecipeDetailView(recipe: recipe)) {
-                    VStack {
-                        
-                        HStack{
-                            Spacer()
-                            if(selectedTab == "history"){
-                                Button(action: {
-                                    RecipeAPIService().removeRecipesFromFile(recipes: [recipe])
-                                    self.savedRecipes = RecipeAPIService().loadRecipesFromFile()
-                                }) {
-                                    Image(systemName: "xmark.circle.fill")
-                                        .foregroundColor(.red)
-                                        .padding(.horizontal)
-                                        .padding(.top)
-                                }
-                            }
+        VStack{
+            
+            if selectedTab == "history"{
+                TextField("Search by title...", text: $searchText)
+                            .textFieldStyle(RoundedBorderTextFieldStyle())
+                            .padding(.horizontal)
+                            .padding(.top)
+                            .focused($isTextFieldFocused)
+            }
+            
+            let filteredRecipes = recipes.filter { recipe in
+                        searchText.isEmpty || recipe.title.localizedCaseInsensitiveContains(searchText)
+            }
+            
+            ScrollView {
+                ForEach(filteredRecipes) { recipe in
+                    NavigationLink(destination: RecipeDetailView(recipe: recipe)) {
+                        VStack {
                             
-                        }
-                        HStack{
-                            AsyncImage(url: URL(string: recipe.image)) { phase in
-                                if let image = phase.image {
-                                    image
-                                        .resizable()
-                                        .scaledToFill()
-                                        .frame(width: 120, height: 120)
-                                        .clipped()
-                                        .cornerRadius(12)
-                                        .padding(.trailing, -10)
-                                        .padding(10)
-                                } else if phase.error != nil {
-                                    Text("Failed to load image")
-                                        .padding(.horizontal)
-                                } else {
-                                    ProgressView()
-                                        .padding()
+                            HStack{
+                                Spacer()
+                                if(selectedTab == "history"){
+                                    Button(action: {
+                                        RecipeAPIService().removeRecipesFromFile(recipes: [recipe])
+                                        self.savedRecipes = RecipeAPIService().loadRecipesFromFile()
+                                    }) {
+                                        Image(systemName: "xmark.circle.fill")
+                                            .foregroundColor(.red)
+                                            .padding(.horizontal)
+                                            .padding(.top)
+                                    }
                                 }
+                                
                             }
-                            
-                            VStack(alignment: .leading) {
-                                
-                                Text(recipe.title)
-                                    .font(.headline)
-                                    .fontWeight(.semibold)
-                                    .foregroundColor(.black)
-                                
-                                if !recipe.usedIngredients.isEmpty {
-                                    Text(recipe.usedIngredients.map { $0.name }.joined(separator: ", "))
-                                        .font(.subheadline)
-                                        .foregroundColor(.green)
+                            HStack{
+                                AsyncImage(url: URL(string: recipe.image)) { phase in
+                                    if let image = phase.image {
+                                        image
+                                            .resizable()
+                                            .scaledToFill()
+                                            .frame(width: 120, height: 120)
+                                            .clipped()
+                                            .cornerRadius(12)
+                                            .padding(.trailing, -10)
+                                            .padding(10)
+                                    } else if phase.error != nil {
+                                        Text("Failed to load image")
+                                            .padding(.horizontal)
+                                    } else {
+                                        ProgressView()
+                                            .padding()
+                                    }
                                 }
                                 
-                                if !recipe.missedIngredients.isEmpty {
-                                    Text(recipe.missedIngredients.map { $0.name }.joined(separator: ", "))
-                                        .font(.subheadline)
+                                VStack(alignment: .leading) {
+                                    
+                                    Text(recipe.title)
+                                        .font(.headline)
+                                        .fontWeight(.semibold)
                                         .foregroundColor(.black)
+                                    
+                                    if !recipe.usedIngredients.isEmpty {
+                                        Text(recipe.usedIngredients.map { $0.original }.joined(separator: "; "))
+                                            .font(.subheadline)
+                                            .foregroundColor(.green)
+                                    }
+                                    
+                                    if !recipe.missedIngredients.isEmpty {
+                                        Text(recipe.missedIngredients.map { $0.original }.joined(separator: "; "))
+                                            .font(.subheadline)
+                                            .foregroundColor(.black)
+                                    }
+                                    
                                 }
+                                .background(.white)
+                                .frame(maxWidth: 200)
+                                .padding(10)
                                 
                             }
-                            .background(.white)
-                            .frame(maxWidth: 200)
-                            .padding(10)
-                            
                         }
+                        .background(Color.white)
+                        .cornerRadius(15)
+                        .shadow(radius: 4)
+                        .padding(.horizontal)
+                        .padding(.vertical, 6)
                     }
-                    .background(Color.white)
-                    .cornerRadius(15)
-                    .shadow(radius: 4)
-                    .padding(.horizontal)
-                    .padding(.vertical, 6)
+                    .buttonStyle(PlainButtonStyle())
                 }
-                .buttonStyle(PlainButtonStyle())
             }
         }
     }

@@ -12,5 +12,6 @@ struct SpoonacularRecipe: Identifiable, Codable {
         let name: String
         let amount: Double?
         let unit: String?
+        let original: String
     }
 }

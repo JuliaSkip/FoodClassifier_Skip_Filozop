@@ -4,11 +4,13 @@ import Foundation
 class RecipeAPIService {
     private let apiKeyD = "57d67011b66e4828a471dae3c78d38bf"
     private let apiKeyJ = "e1125124ce06424d92bd601b5864ddc5"
+    private let apiKeyD2 = "a1da9a7cf88148678e974631f2a0ad3d"
+    
     private let fileName = "recipes.json"
 
     func fetchRecipes(for ingredients: [String], completion: @escaping ([SpoonacularRecipe]) -> Void) {
         let ingredientsParam = ingredients.joined(separator: ",")
-        let urlString = "https://api.spoonacular.com/recipes/findByIngredients?ingredients=\(ingredientsParam)&number=100&apiKey=\(apiKeyJ)"
+        let urlString = "https://api.spoonacular.com/recipes/findByIngredients?ingredients=\(ingredientsParam)&number=100&apiKey=\(apiKeyD)"
 
         guard let url = URL(string: urlString.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)!) else {
             print("Invalid URL")
@@ -37,6 +39,38 @@ class RecipeAPIService {
             }
         }.resume()
     }
+    
+    func fetchRecipeSteps(for id: Int, completion: @escaping ([SpoonacularSteps]) -> Void) {
+        let urlString = "https://api.spoonacular.com/recipes/\(id)/analyzedInstructions?apiKey=\(apiKeyD)"
+
+        guard let url = URL(string: urlString.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)!) else {
+            print("Invalid URL")
+            completion([])
+            return
+        }
+
+        URLSession.shared.dataTask(with: url) { data, _, error in
+            if let data = data {
+                do {
+                    let instructions = try JSONDecoder().decode([SpoonacularSteps].self, from: data)
+                    DispatchQueue.main.async {
+                        completion(instructions)
+                    }
+                } catch {
+                    print("Decoding error: \(error)")
+                    DispatchQueue.main.async {
+                        completion([])
+                    }
+                }
+            } else {
+                print("Request error: \(error?.localizedDescription ?? "Unknown error")")
+                DispatchQueue.main.async {
+                    completion([])
+                }
+            }
+        }.resume()
+    }
+
     
     func writeRecipesToFile(recipes: [SpoonacularRecipe]){
         var recipesFromFile = loadRecipesFromFile()
