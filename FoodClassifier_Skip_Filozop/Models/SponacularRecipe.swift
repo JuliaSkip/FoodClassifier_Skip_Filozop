@@ -7,7 +7,6 @@ struct SpoonacularRecipe: Identifiable, Codable {
     let image: String
     let usedIngredients: [Ingredient]
     let missedIngredients: [Ingredient]
-    let instructions: String? 
     
     struct Ingredient: Codable {
         let name: String
